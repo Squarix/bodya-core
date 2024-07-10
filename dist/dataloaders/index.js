@@ -12,21 +12,55 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createShardedLoader = createShardedLoader;
 exports.createLoader = createLoader;
 exports.createCachedLoader = createCachedLoader;
 const dataloader_1 = __importDefault(require("dataloader"));
 const bluebird_1 = __importDefault(require("bluebird"));
+const groupBy_1 = __importDefault(require("lodash/groupBy"));
 const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 10;
-function createLoader(batchFn, options, ttl) {
-    return new dataloader_1.default(batchFn, options);
+/*
+* First parameter on load is always shard number!
+* Костыль пиздец, но у меня нету даже полдня на написание нормальной фабрики
+* чтобы вообще не надо было париться по шардам)
+* */
+function createShardedLoader(batchFn, options) {
+    const cacheMap = new Map();
+    return new dataloader_1.default(localShardedBatchFn(batchFn), Object.assign(Object.assign({}, options), { cache: false }));
+}
+function createLoader(batchFn, options, ttlS) {
+    const cacheMap = new Map();
+    return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign(Object.assign({}, options), { cacheMap }));
 }
 function createCachedLoader(batchFn, redisClient, options, ttl) {
-    return new dataloader_1.default(cachedBatchFn(batchFn, redisClient, ttl), Object.assign(Object.assign({}, options), { cache: false }));
+    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl), Object.assign(Object.assign({}, options), { cache: false }));
 }
 function _buildCacheKey(fnName, key) {
     return `bodya-dataloaders-${fnName}-${key}`;
 }
-function cachedBatchFn(batchFn, redisClient, ttl) {
+function localShardedBatchFn(shardedBatchFn) {
+    return (keys) => __awaiter(this, void 0, void 0, function* () {
+        const groupedKeys = (0, groupBy_1.default)(keys, (k) => k[0]);
+        const shardedResults = yield Promise.all(Object.entries(groupedKeys).map((_a) => __awaiter(this, [_a], void 0, function* ([shard, keys]) {
+            return shardedBatchFn(+shard, keys[1]);
+        })));
+        const loaderResults = keys.map(([shard, key]) => {
+            return shardedResults[shard][groupedKeys[shard].findIndex((k) => k[0] === shard && k[1] === key)];
+        });
+        return loaderResults;
+    });
+}
+function localCachedBatchFn(batchFn, cacheMap, ttlS) {
+    return (keys) => __awaiter(this, void 0, void 0, function* () {
+        const result = yield batchFn(keys);
+        // clear local cache after TTL
+        setTimeout(() => {
+            keys.forEach(k => cacheMap.delete(k));
+        }, ttlS * 1000);
+        return result;
+    });
+}
+function centrallyCachedBatchFn(batchFn, redisClient, ttl) {
     return (keys) => __awaiter(this, void 0, void 0, function* () {
         const matches = new Map();
         const unmatched = [];
@@ -52,8 +86,8 @@ function cachedBatchFn(batchFn, redisClient, ttl) {
         results.forEach((res, i) => {
             if (!(res instanceof Error)) {
                 cacheables.push([unmatched[i].toString(), JSON.stringify(res)]);
-                matches.set(unmatched[i].toString(), res);
             }
+            matches.set(unmatched[i].toString(), res);
         });
         yield redisClient.mSet(cacheables);
         yield bluebird_1.default.map(cacheables, (key) => {

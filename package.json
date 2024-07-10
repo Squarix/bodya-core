@@ -1,11 +1,12 @@
 {
   "name": "@bodyam8/core",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "most usefull backend tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
