@@ -24,9 +24,13 @@
   },
   "homepage": "https://github.com/sanya-sanya-vlad/bodya-core#readme",
   "devDependencies": {
+    "@types/bluebird": "^3.5.42",
+    "@types/node": "^20.14.10",
     "typescript": "^5.5.3"
   },
   "dependencies": {
-    "dataloader": "^2.2.2"
+    "bluebird": "^3.7.2",
+    "dataloader": "^2.2.2",
+    "redis": "^4.6.15"
   }
 }

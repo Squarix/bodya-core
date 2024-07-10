@@ -16,4 +16,10 @@ Simple batching schema:
 
 ![Dataloaders](https://github.com/sanya-sanya-vlad/bodya-core/assets/42293261/a704d05d-204c-4221-a0ba-a11f2fc0da9a)
 
+### IMPORTANT
+Cache key is build as `dataloaders-${function name}-${key}`.
+That's why dataloaders batch function __must__ have unique function name.
 
+
+Caching mechanism has configurable `REDIS_CLIENT_MAX_CONCURRENCY` parameter
+it's default values is `20`
