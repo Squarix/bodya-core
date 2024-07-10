@@ -1,5 +1,5 @@
 {
-  "name": "@bodya/core",
+  "name": "@bodyam8/core",
   "version": "0.0.1",
   "description": "most usefull backend tools",
   "main": "dist/index.js",
@@ -25,5 +25,8 @@
   "homepage": "https://github.com/sanya-sanya-vlad/bodya-core#readme",
   "devDependencies": {
     "typescript": "^5.5.3"
+  },
+  "dependencies": {
+    "dataloader": "^2.2.2"
   }
 }
