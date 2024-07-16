@@ -13,12 +13,12 @@ interface Serializable {
 * First parameter on load is always shard number!
 * Костыль пиздец, но у меня нету даже полдня на написание нормальной фабрики
 * чтобы вообще не надо было париться по шардам)
+* шардированые запросы не кешируем!
 * */
 export function createShardedLoader<K, N>(
     batchFn: (shard: number, keys: K) => Promise<ArrayLike<N | Error>>,
     options: DataLoader.Options<K, N>,
 ): DataLoader<K, N> {
-    const cacheMap = new Map();
     return new DataLoader<K, N>(localShardedBatchFn(batchFn), {...options, cache: false})
 }
 

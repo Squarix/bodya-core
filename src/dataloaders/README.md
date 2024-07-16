@@ -23,3 +23,12 @@ That's why dataloaders batch function __must__ have unique function name.
 
 Caching mechanism has configurable `REDIS_CLIENT_MAX_CONCURRENCY` parameter
 it's default values is `20`
+
+
+### LOADER TYPES:
+
+`createLoader` - loader for main tables, supports local cache
+
+`createShardedLoader` - loader for sharded tables, cache is disabled
+
+`createCachedLoader` - loader for main tables, cache inside redis

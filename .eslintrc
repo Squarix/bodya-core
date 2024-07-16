@@ -3,6 +3,7 @@
   "extends": [ "plugin:@typescript-eslint/recommended" ],
   "parserOptions": { "ecmaVersion": 2018, "sourceType": "module" },
   "rules": {
-    "quotes": [2, "single", { "avoidEscape": true }]
+    "quotes": [2, "single", { "avoidEscape": true }],
+    "@typescript-eslint/no-explicit-any": 0
   }
 }
