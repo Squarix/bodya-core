@@ -4,7 +4,6 @@ exports.createDynamicModel = void 0;
 const knex_1 = require("knex");
 const createDynamicModel = (proto, tableName, connection) => {
     const model = Object.create(proto);
-    console.log(tableName);
     Object.assign(model, {
         tableName: () => {
             return tableName;
