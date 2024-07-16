@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sanya-sanya-vlad/bodya-core.git"
+    "url": "git+https://github.com/svs-web-dev/bodya-core.git"
   },
   "keywords": [
     "lib",
