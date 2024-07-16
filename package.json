@@ -1,6 +1,6 @@
 {
   "name": "@bodyam8/core",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "most usefull backend tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,9 +21,9 @@
   "author": "Squarix",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sanya-sanya-vlad/bodya-core/issues"
+    "url": "https://github.com/svs-web-dev/bodya-core/issues"
   },
-  "homepage": "https://github.com/sanya-sanya-vlad/bodya-core#readme",
+  "homepage": "https://github.com/svs-web-dev/bodya-core#readme",
   "devDependencies": {
     "@eslint/eslintrc": "^2.1.4",
     "@eslint/js": "^8.55.0",
