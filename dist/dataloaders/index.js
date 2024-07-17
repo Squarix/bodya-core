@@ -30,7 +30,7 @@ function createShardedLoader(batchFn, options) {
 }
 function createLoader(batchFn, options, ttlS) {
     const cacheMap = new Map();
-    return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign(Object.assign({}, options), { cacheMap }));
+    return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign(Object.assign({}, options), { batchScheduleFn: (cb) => setTimeout(cb, 100), cacheMap }));
 }
 function createCachedLoader(batchFn, redisClient, options, ttl) {
     return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl), Object.assign(Object.assign({}, options), { cache: false }));
