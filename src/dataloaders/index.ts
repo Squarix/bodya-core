@@ -1,9 +1,9 @@
 import DataLoader from 'dataloader';
-import {RedisClientType} from 'redis';
 import BluebirdPromise from 'bluebird';
 import groupBy from 'lodash/groupBy';
+import {Redis} from 'ioredis';
 
-const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 10;
+const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 100;
 
 interface Serializable {
     toString(): string,
@@ -38,7 +38,7 @@ export function createLoader<K extends Serializable, N>(
 
 export function createCachedLoader<K extends Serializable, N>(
     batchFn: DataLoader.BatchLoadFn<K, N>,
-    redisClient: RedisClientType,
+    redisClient: Redis,
     options: DataLoader.Options<K, N>,
     ttl: number,
 ): DataLoader<K, N> {
@@ -90,14 +90,14 @@ function localCachedBatchFn<K extends Serializable, N>(
 
 function centrallyCachedBatchFn<K extends Serializable, N>(
     batchFn: DataLoader.BatchLoadFn<K, N>,
-    redisClient: RedisClientType,
+    redisClient: Redis,
     ttl: number,
 ) {
     return async (keys: ReadonlyArray<K>): Promise<ArrayLike<N | Error>> => {
         const matches = new Map();
         const unmatched: Array<K> = [];
         const cacheKeys = keys.map(k => _buildCacheKey(batchFn.name, k.toString()));
-        const cachedValues: Array<string | null> = await redisClient.mGet(cacheKeys);
+        const cachedValues: Array<string | null> = await redisClient.mget(cacheKeys);
         cachedValues.forEach((value, i) => {
             let parsedValue = null;
             try {
@@ -116,18 +116,18 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
         });
 
         const results: Array<N | Error> = Array.from(await batchFn(unmatched));
-        const cacheables: Array<[string, string]> = [];
+        const cacheables: Record<string, string> = {};
 
         results.forEach((res, i) => {
             if (!(res instanceof Error)) {
-                cacheables.push([unmatched[i].toString(), JSON.stringify(res)])
+                cacheables[unmatched[i].toString()] = JSON.stringify(res);
             }
 
             matches.set(unmatched[i].toString(), res)
         });
 
-        await redisClient.mSet(cacheables);
-        await BluebirdPromise.map(cacheables, (key) => {
+        await redisClient.mset(cacheables);
+        await BluebirdPromise.map(Object.keys(cacheables), (key) => {
             return redisClient.expire(key.toString(), ttl);
         }, {concurrency: +REDIS_CLIENT_MAX_CONCURRENCY});
 
