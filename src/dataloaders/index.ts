@@ -115,12 +115,16 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
             return unmatched.push(keys[i]);
         });
 
+        if (!unmatched.length) {
+            return keys.map(k => matches.get(k.toString()));
+        }
+
         const results: Array<N | Error> = Array.from(await batchFn(unmatched));
         const cacheables: Record<string, string> = {};
 
         results.forEach((res, i) => {
             if (!(res instanceof Error)) {
-                cacheables[_buildCacheKey(unmatched[i].toString(), batchFn.name)] = JSON.stringify(res);
+                cacheables[_buildCacheKey(batchFn.name, unmatched[i].toString())] = JSON.stringify(res);
             }
 
             matches.set(unmatched[i].toString(), res)

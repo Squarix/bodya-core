@@ -81,11 +81,14 @@ function centrallyCachedBatchFn(batchFn, redisClient, ttl) {
             }
             return unmatched.push(keys[i]);
         });
+        if (!unmatched.length) {
+            return keys.map(k => matches.get(k.toString()));
+        }
         const results = Array.from(yield batchFn(unmatched));
         const cacheables = {};
         results.forEach((res, i) => {
             if (!(res instanceof Error)) {
-                cacheables[_buildCacheKey(unmatched[i].toString(), batchFn.name)] = JSON.stringify(res);
+                cacheables[_buildCacheKey(batchFn.name, unmatched[i].toString())] = JSON.stringify(res);
             }
             matches.set(unmatched[i].toString(), res);
         });
