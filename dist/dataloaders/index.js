@@ -26,14 +26,14 @@ const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY ||
 * шардированые запросы не кешируем!
 * */
 function createShardedLoader(batchFn, options) {
-    return new dataloader_1.default(localShardedBatchFn(batchFn), Object.assign(Object.assign({}, options), { cache: false }));
+    return new dataloader_1.default(localShardedBatchFn(batchFn), Object.assign(Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 100) }, options), { cache: false }));
 }
 function createLoader(batchFn, options, ttlS) {
     const cacheMap = new Map();
-    return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign(Object.assign({}, options), { batchScheduleFn: (cb) => setTimeout(cb, 100), cacheMap }));
+    return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 100), cacheMap }, options));
 }
 function createCachedLoader(batchFn, redisClient, options, ttl) {
-    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl), Object.assign(Object.assign({}, options), { cache: false }));
+    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl), Object.assign(Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 100) }, options), { cache: false }));
 }
 function _buildCacheKey(fnName, key) {
     return `bodya-dataloaders-${fnName}-${key}`;
