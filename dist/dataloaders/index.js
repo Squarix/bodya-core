@@ -18,14 +18,14 @@ exports.createCachedLoader = createCachedLoader;
 const dataloader_1 = __importDefault(require("dataloader"));
 const bluebird_1 = __importDefault(require("bluebird"));
 const groupBy_1 = __importDefault(require("lodash/groupBy"));
-const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 10;
+const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 100;
 /*
 * First parameter on load is always shard number!
 * Костыль пиздец, но у меня нету даже полдня на написание нормальной фабрики
 * чтобы вообще не надо было париться по шардам)
+* шардированые запросы не кешируем!
 * */
 function createShardedLoader(batchFn, options) {
-    const cacheMap = new Map();
     return new dataloader_1.default(localShardedBatchFn(batchFn), Object.assign(Object.assign({}, options), { cache: false }));
 }
 function createLoader(batchFn, options, ttlS) {
@@ -65,7 +65,7 @@ function centrallyCachedBatchFn(batchFn, redisClient, ttl) {
         const matches = new Map();
         const unmatched = [];
         const cacheKeys = keys.map(k => _buildCacheKey(batchFn.name, k.toString()));
-        const cachedValues = yield redisClient.mGet(cacheKeys);
+        const cachedValues = yield redisClient.mget(cacheKeys);
         cachedValues.forEach((value, i) => {
             let parsedValue = null;
             try {
@@ -82,15 +82,15 @@ function centrallyCachedBatchFn(batchFn, redisClient, ttl) {
             return unmatched.push(keys[i]);
         });
         const results = Array.from(yield batchFn(unmatched));
-        const cacheables = [];
+        const cacheables = {};
         results.forEach((res, i) => {
             if (!(res instanceof Error)) {
-                cacheables.push([unmatched[i].toString(), JSON.stringify(res)]);
+                cacheables[unmatched[i].toString()] = JSON.stringify(res);
             }
             matches.set(unmatched[i].toString(), res);
         });
-        yield redisClient.mSet(cacheables);
-        yield bluebird_1.default.map(cacheables, (key) => {
+        yield redisClient.mset(cacheables);
+        yield bluebird_1.default.map(Object.keys(cacheables), (key) => {
             return redisClient.expire(key.toString(), ttl);
         }, { concurrency: +REDIS_CLIENT_MAX_CONCURRENCY });
         return keys.map(k => matches.get(k.toString()));
