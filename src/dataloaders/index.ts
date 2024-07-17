@@ -31,6 +31,7 @@ export function createLoader<K extends Serializable, N>(
     return new DataLoader<K, N>(
         localCachedBatchFn(batchFn, cacheMap, ttlS), {
             ...options,
+            batchScheduleFn: (cb) => setTimeout(cb, 100),
             cacheMap,
         }
     );
