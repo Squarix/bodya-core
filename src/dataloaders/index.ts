@@ -17,7 +17,7 @@ interface Serializable {
 * */
 export function createShardedLoader<K, N>(
     batchFn: (shard: number, keys: K) => Promise<ArrayLike<N | Error>>,
-    options: DataLoader.Options<K, N>,
+    options: DataLoader.Options<K, N> = {},
 ): DataLoader<K, N> {
     return new DataLoader<K, N>(localShardedBatchFn(batchFn), {
         batchScheduleFn: (cb) => setTimeout(cb, 100),
@@ -28,8 +28,8 @@ export function createShardedLoader<K, N>(
 
 export function createLoader<K extends Serializable, N>(
     batchFn: DataLoader.BatchLoadFn<K, N>,
-    options: DataLoader.Options<K, N>,
-    ttlS: number
+    options: DataLoader.Options<K, N> = {},
+    ttlS: number = 0
 ): DataLoader<K, N> {
     const cacheMap = new Map();
     return new DataLoader<K, N>(
@@ -44,8 +44,8 @@ export function createLoader<K extends Serializable, N>(
 export function createCachedLoader<K extends Serializable, N>(
     batchFn: DataLoader.BatchLoadFn<K, N>,
     redisClient: Redis,
-    options: DataLoader.Options<K, N>,
-    ttl: number,
+    options: DataLoader.Options<K, N> = {},
+    ttl: number = 0,
 ): DataLoader<K, N> {
     return new DataLoader<K, N>(centrallyCachedBatchFn<K, N>(batchFn, redisClient, ttl), {
         batchScheduleFn: (cb) => setTimeout(cb, 100),

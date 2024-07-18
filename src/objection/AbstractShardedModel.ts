@@ -1,5 +1,4 @@
-import {getShardedConnection} from '../sharding';
-import {ShardedConfig} from '../sharding/sharding';
+import {DatabaseConfig, getShardedConnection} from './connection';
 import {createDynamicModel} from './utils';
 import {Model} from 'objection';
 
@@ -17,7 +16,7 @@ export abstract class AbstractShardedModel extends Model {
         return `${this.getTableNameTemplate()}_${shard}`;
     }
 
-    static useShard(config: ShardedConfig, shard: number): typeof Model {
+    static useShard(config: DatabaseConfig, shard: number): typeof Model {
         const tableName = this.getShardedTableName(shard);
         const cachedModel = shardedModelMap.get(tableName);
         if (cachedModel) {
