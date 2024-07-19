@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractShardedModel = void 0;
-const sharding_1 = require("../sharding");
+const connection_1 = require("./connection");
 const utils_1 = require("./utils");
 const objection_1 = require("objection");
 const shardedModelMap = new Map();
@@ -21,7 +21,7 @@ class AbstractShardedModel extends objection_1.Model {
         if (cachedModel) {
             return cachedModel;
         }
-        const connection = (0, sharding_1.getShardedConnection)(config, shard);
+        const connection = (0, connection_1.getShardedConnection)(config, shard);
         const model = (0, utils_1.createDynamicModel)(this, tableName, connection);
         shardedModelMap.set(tableName, model);
         return model;
