@@ -1,4 +1,5 @@
 import {Knex} from 'knex';
+import cfg from 'config';
 
 interface ShardedConnection {
     sharding: string;
@@ -6,7 +7,7 @@ interface ShardedConnection {
 
 export type ShardedConnectionConfig = Knex.ConnectionConfig & ShardedConnection;
 export type DatabaseConfig = {
-    connections: Array<Knex.ConnectionConfig & {name: string}>
+    connections: Array<Knex.ConnectionConfig & { name: string }>
     shardedConnections: Array<ShardedConnectionConfig>;
 }
 
@@ -22,16 +23,17 @@ export const getShardedConnection = (config: DatabaseConfig, shard: number): Sha
         return shardingMap.get(shard);
     }
 
-    const shardedConnection = config.shardedConnections.find(
-        connection => {
-            if (!connection.sharding) {
-                return;
-            }
+    const shardedConnection = cfg.util.cloneDeep(
+        config.shardedConnections.find(
+            connection => {
+                if (!connection.sharding) {
+                    return;
+                }
 
-            const [from, to] = connection.sharding.split('-');
-            console.log('f: ', from, 't: ', to, 's: ', shard);
-            return +from >= shard && +to >= shard;
-        }
+                const [from, to] = connection.sharding.split('-');
+                return +from >= shard && +to >= shard;
+            }
+        )
     );
 
     if (!shardedConnection) {
@@ -48,7 +50,9 @@ export const getKnexConnection = (name: string, config: DatabaseConfig) => {
         return connectionMap.get(name);
     }
 
-    const connection = config.connections.find(c => c.name === name);
+    const connection = cfg.util.cloneDeep(
+        config.connections.find(c => c.name === name),
+    );
     connectionMap.set(name, connection);
     return connection;
 }

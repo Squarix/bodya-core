@@ -28,6 +28,7 @@
     "@eslint/eslintrc": "^2.1.4",
     "@eslint/js": "^8.55.0",
     "@types/bluebird": "^3.5.42",
+    "@types/config": "^3.3.4",
     "@types/lodash": "^4.17.6",
     "@types/node": "^20.14.10",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -41,6 +42,7 @@
   },
   "dependencies": {
     "bluebird": "^3.7.2",
+    "config": "^3.3.12",
     "dataloader": "^2.2.2",
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
