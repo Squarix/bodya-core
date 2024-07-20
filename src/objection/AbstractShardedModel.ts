@@ -8,7 +8,7 @@ export abstract class AbstractShardedModel extends Model {
     static get idColumn(): string {
         return 'id';
     }
-    static getTableNameTemplate() {
+    static getTableNameTemplate(): string {
         throw new Error('Tablename template must be implemented');
     }
 

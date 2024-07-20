@@ -16,7 +16,7 @@ interface Serializable {
 * шардированые запросы не кешируем!
 * */
 export function createShardedLoader<K, N>(
-    batchFn: (shard: number, keys: K) => Promise<ArrayLike<N | Error>>,
+    batchFn: (shard: number, keys: K[]) => Promise<ArrayLike<N | Error>>,
     options: DataLoader.Options<K, N> = {},
 ): DataLoader<K, N> {
     return new DataLoader<K, N>(localShardedBatchFn(batchFn), {
@@ -60,13 +60,13 @@ function _buildCacheKey(fnName: string, key: string): string {
 }
 
 function localShardedBatchFn<K, N>(
-    shardedBatchFn: (shard: number, keys: K) => Promise<ArrayLike<N | Error>>,
+    shardedBatchFn: (shard: number, keys: K[]) => Promise<ArrayLike<N | Error>>,
 ) {
     return async (keys: ReadonlyArray<K>) => {
-        const groupedKeys = groupBy(keys, (k: any) => k[0]);
+        const groupedKeys = groupBy(keys, (k) => (k as [number])[0]);
         const shardedResults = await Promise.all(
             Object.entries(groupedKeys).map(async ([shard, keys]) => {
-                return shardedBatchFn(+shard, keys[1]);
+                return shardedBatchFn(+shard, keys);
             })
         )
 
