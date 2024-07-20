@@ -15,3 +15,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./dataloaders"), exports);
+__exportStar(require("./objection/connection"), exports);
+__exportStar(require("./objection/AbstractShardedModel"), exports);
+__exportStar(require("./objection/utils"), exports);
