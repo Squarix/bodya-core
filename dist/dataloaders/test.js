@@ -38,7 +38,7 @@ console.log(Object.entries(groupped));
 const loader = (0, index_1.createShardedLoader)(function loader(shard, keys) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Shards called: ', shard, keys);
-        return keys.map(k => k[1]);
+        return keys.map(k => k);
     });
 });
 Promise.all([

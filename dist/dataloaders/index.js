@@ -42,7 +42,7 @@ function localShardedBatchFn(shardedBatchFn) {
     return (keys) => __awaiter(this, void 0, void 0, function* () {
         const groupedKeys = (0, groupBy_1.default)(keys, (k) => k[0]);
         const shardedResults = yield Promise.all(Object.entries(groupedKeys).map((_a) => __awaiter(this, [_a], void 0, function* ([shard, keys]) {
-            return shardedBatchFn(+shard, keys);
+            return shardedBatchFn(+shard, keys.map(k => k[1]));
         })));
         const loaderResults = keys.map(([shard, key]) => {
             return shardedResults[shard][groupedKeys[shard].findIndex((k) => k[0] === shard && k[1] === key)];

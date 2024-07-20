@@ -27,10 +27,10 @@ console.log(groupped);
 
 console.log(Object.entries(groupped));
 
-const loader = createShardedLoader<number[], number>(
+const loader = createShardedLoader<number, number>(
     async function loader(shard, keys) {
         console.log('Shards called: ', shard, keys);
-        return keys.map(k => k[1]);
+        return keys.map(k => k);
     },
 )
 

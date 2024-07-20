@@ -17,9 +17,9 @@ interface Serializable {
 * */
 export function createShardedLoader<K, N>(
     batchFn: (shard: number, keys: K[]) => Promise<ArrayLike<N | Error>>,
-    options: DataLoader.Options<K, N> = {},
-): DataLoader<K, N> {
-    return new DataLoader<K, N>(localShardedBatchFn(batchFn), {
+    options: DataLoader.Options<[number, K], N> = {},
+): DataLoader<[number, K], N> {
+    return new DataLoader<[number, K], N>(localShardedBatchFn(batchFn), {
         batchScheduleFn: (cb) => setTimeout(cb, 100),
         ...options,
         cache: false,
@@ -62,11 +62,11 @@ function _buildCacheKey(fnName: string, key: string): string {
 function localShardedBatchFn<K, N>(
     shardedBatchFn: (shard: number, keys: K[]) => Promise<ArrayLike<N | Error>>,
 ) {
-    return async (keys: ReadonlyArray<K>) => {
-        const groupedKeys = groupBy(keys, (k) => (k as [number])[0]);
+    return async (keys: ReadonlyArray<[number, K]>) => {
+        const groupedKeys = groupBy(keys, (k) => k[0]);
         const shardedResults = await Promise.all(
             Object.entries(groupedKeys).map(async ([shard, keys]) => {
-                return shardedBatchFn(+shard, keys);
+                return shardedBatchFn(+shard, keys.map(k => k[1]));
             })
         )
 
