@@ -5,7 +5,7 @@ import {Model} from 'objection';
 const shardedModelMap: Map<string, typeof Model> = new Map<string, typeof Model>();
 
 export abstract class AbstractShardedModel extends Model {
-    static get idColumn(): string {
+    static get idColumn(): string | string[] {
         return 'id';
     }
     static getTableNameTemplate(): string {
