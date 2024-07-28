@@ -46,7 +46,7 @@ export function createCachedLoader<K extends Serializable, N>(
     redisClient: Redis,
     options: DataLoader.Options<K, N> = {},
     ttl: number = 0,
-    cacheKeyFn: (key: K) => string,
+    cacheKeyFn?: (key: K) => string,
 ): DataLoader<K, N> {
     return new DataLoader<K, N>(centrallyCachedBatchFn<K, N>(batchFn, redisClient, ttl, cacheKeyFn), {
         batchScheduleFn: (cb) => setTimeout(cb, 100),
