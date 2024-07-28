@@ -32,8 +32,8 @@ function createLoader(batchFn, options = {}, ttlS = 0) {
     const cacheMap = new Map();
     return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 100), cacheMap }, options));
 }
-function createCachedLoader(batchFn, redisClient, options = {}, ttl = 0) {
-    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl), Object.assign(Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 100) }, options), { cache: false }));
+function createCachedLoader(batchFn, redisClient, options = {}, ttl = 0, cacheKeyFn) {
+    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl, cacheKeyFn), Object.assign(Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 100) }, options), { cache: false }));
 }
 function _buildCacheKey(fnName, key) {
     return `bodya-dataloaders-${fnName}-${key}`;
@@ -60,11 +60,11 @@ function localCachedBatchFn(batchFn, cacheMap, ttlS) {
         return result;
     });
 }
-function centrallyCachedBatchFn(batchFn, redisClient, ttl) {
+function centrallyCachedBatchFn(batchFn, redisClient, ttl, cacheKeyFn) {
     return (keys) => __awaiter(this, void 0, void 0, function* () {
         const matches = new Map();
         const unmatched = [];
-        const cacheKeys = keys.map(k => _buildCacheKey(batchFn.name, k.toString()));
+        const cacheKeys = keys.map(k => _buildCacheKey(batchFn.name, cacheKeyFn ? cacheKeyFn(k) : k.toString()));
         const cachedValues = yield redisClient.mget(cacheKeys);
         cachedValues.forEach((value, i) => {
             let parsedValue = null;

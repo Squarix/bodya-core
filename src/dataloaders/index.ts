@@ -46,8 +46,9 @@ export function createCachedLoader<K extends Serializable, N>(
     redisClient: Redis,
     options: DataLoader.Options<K, N> = {},
     ttl: number = 0,
+    cacheKeyFn: (key: K) => string,
 ): DataLoader<K, N> {
-    return new DataLoader<K, N>(centrallyCachedBatchFn<K, N>(batchFn, redisClient, ttl), {
+    return new DataLoader<K, N>(centrallyCachedBatchFn<K, N>(batchFn, redisClient, ttl, cacheKeyFn), {
         batchScheduleFn: (cb) => setTimeout(cb, 100),
         ...options,
         cache: false,
@@ -98,11 +99,12 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
     batchFn: DataLoader.BatchLoadFn<K, N>,
     redisClient: Redis,
     ttl: number,
+    cacheKeyFn?: (key: K) => string,
 ) {
     return async (keys: ReadonlyArray<K>): Promise<ArrayLike<N | Error>> => {
         const matches = new Map();
         const unmatched: Array<K> = [];
-        const cacheKeys = keys.map(k => _buildCacheKey(batchFn.name, k.toString()));
+        const cacheKeys = keys.map(k => _buildCacheKey(batchFn.name, cacheKeyFn ? cacheKeyFn(k) : k.toString()));
         const cachedValues: Array<string | null> = await redisClient.mget(cacheKeys);
         cachedValues.forEach((value, i) => {
             let parsedValue = null;
