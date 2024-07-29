@@ -42,9 +42,9 @@ const loader = (0, index_1.createShardedLoader)(function loader(shard, keys) {
     });
 });
 Promise.all([
-    loader.load([0, 1]),
-    loader.load([0, 2]),
-    loader.load([0, 3]),
-    loader.load([1, 11]),
-    loader.load([1, 12]),
+    loader.load([7, 1]),
+    loader.load([7, 2]),
+    loader.load([7, 3]),
+    loader.load([2, 11]),
+    loader.load([2, 12]),
 ]).then(r => console.log(r));

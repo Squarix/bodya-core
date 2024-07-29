@@ -65,14 +65,16 @@ function localShardedBatchFn<K, N>(
 ) {
     return async (keys: ReadonlyArray<[number, K]>) => {
         const groupedKeys = groupBy(keys, (k) => k[0]);
+        const shardsKeys = Object.entries(groupedKeys);
+        const shards = Object.keys(groupedKeys).map(s => +s);
         const shardedResults = await Promise.all(
-            Object.entries(groupedKeys).map(async ([shard, keys]) => {
+            shardsKeys.map(async ([shard, keys]) => {
                 return shardedBatchFn(+shard, keys.map(k => k[1]));
             })
         )
 
         const loaderResults = keys.map(([shard, key]: any) => {
-            return shardedResults[shard][groupedKeys[shard].findIndex((k: any) => k[0] === shard && k[1] === key)];
+            return shardedResults[shards.indexOf(shard)][groupedKeys[shard].findIndex((k: any) => k[0] === shard && k[1] === key)];
         });
 
         return loaderResults;
