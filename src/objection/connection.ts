@@ -31,7 +31,7 @@ export const getShardedConnection = (config: DatabaseConfig, shard: number): Sha
                 }
 
                 const [from, to] = connection.sharding.split('-');
-                return +from >= shard && +to >= shard;
+                return +shard >= +from && +shard <= +to;
             }
         )
     );

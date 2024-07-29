@@ -20,7 +20,7 @@ const getShardedConnection = (config, shard) => {
             return;
         }
         const [from, to] = connection.sharding.split('-');
-        return +from >= shard && +to >= shard;
+        return +shard >= +from && +shard <= +to;
     }));
     if (!shardedConnection) {
         throw new Error(`Missing config for requested shard: ${shard}`);
