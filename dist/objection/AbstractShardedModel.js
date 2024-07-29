@@ -15,6 +15,9 @@ class AbstractShardedModel extends objection_1.Model {
     static getShardedTableName(shard) {
         return `${this.getTableNameTemplate()}_${shard}`;
     }
+    static get tableName() {
+        return this['assignedTableName'];
+    }
     static useShard(config, shard) {
         const tableName = this.getShardedTableName(shard);
         const cachedModel = shardedModelMap.get(tableName);

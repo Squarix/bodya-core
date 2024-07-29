@@ -20,7 +20,7 @@ export function createShardedLoader<K, N>(
     options: DataLoader.Options<[number, K], N> = {},
 ): DataLoader<[number, K], N> {
     return new DataLoader<[number, K], N>(localShardedBatchFn(batchFn), {
-        batchScheduleFn: (cb) => setTimeout(cb, 100),
+        batchScheduleFn: (cb) => setTimeout(cb, 25),
         ...options,
         cache: false,
     });
@@ -34,7 +34,7 @@ export function createLoader<K extends Serializable, N>(
     const cacheMap = new Map();
     return new DataLoader<K, N>(
         localCachedBatchFn(batchFn, cacheMap, ttlS), {
-            batchScheduleFn: (cb) => setTimeout(cb, 100),
+            batchScheduleFn: (cb) => setTimeout(cb, 25),
             cacheMap,
             ...options,
         }
@@ -49,7 +49,7 @@ export function createCachedLoader<K extends Serializable, N>(
     cacheKeyFn?: (key: K) => string,
 ): DataLoader<K, N> {
     return new DataLoader<K, N>(centrallyCachedBatchFn<K, N>(batchFn, redisClient, ttl, cacheKeyFn), {
-        batchScheduleFn: (cb) => setTimeout(cb, 100),
+        batchScheduleFn: (cb) => setTimeout(cb, 25),
         ...options,
         cache: false,
     });
@@ -119,7 +119,7 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
             }
 
             if (parsedValue !== null) {
-                return matches.set(keys[i].toString(), parsedValue);
+                return matches.set(cacheKeyFn ? cacheKeyFn(keys[i]) : keys[i].toString(), parsedValue);
             }
 
             return unmatched.push(keys[i]);

@@ -10,10 +10,9 @@ function createClassInheritor(className) {
   `);
 }
 const createDynamicModel = (proto, tableName, connection) => {
-    console.log(proto.name);
     const inheritor = createClassInheritor(proto.name);
     const model = inheritor(proto);
-    model['tableName'] = () => { return tableName; };
+    model['assignedTableName'] = tableName;
     model.knex((0, knex_1.knex)(connection));
     return model;
 };
