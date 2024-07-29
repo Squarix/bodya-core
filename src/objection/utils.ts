@@ -1,20 +1,22 @@
-import {Model} from 'objection';
 import {ShardedConnectionConfig} from './connection';
 import {AbstractShardedModel} from './AbstractShardedModel';
-import {Knex, knex} from 'knex';
+import {knex} from 'knex';
 
-export const createDynamicModel = (proto: typeof AbstractShardedModel, tableName: string, connection: ShardedConnectionConfig): typeof Model => {
-    const model = Object.create(proto);
-    Object.assign(model, {
-        tableName: () => {
-            return tableName;
-        },
-    });
-    
-    model.knex(knex(connection));
-    return model;
+// eslint-disable-next-line @typescript-eslint/ban-types
+function createClassInheritor(className: string): Function {
+    return new Function(
+        'BaseClass',
+        `
+    'use strict';
+    return class ${className} extends BaseClass {}
+  `);
 }
 
-export const createKnexConnection = (name: string, connections: Array<Knex.ConnectionConfig | ShardedConnectionConfig>) => {
-
+export const createDynamicModel = <T extends typeof AbstractShardedModel>(proto: T, tableName: string, connection: ShardedConnectionConfig): T => {
+    console.log(proto.name);
+    const inheritor = createClassInheritor(proto.name);
+    const model = inheritor(proto);
+    model['tableName'] = () => {return tableName};
+    model.knex(knex(connection));
+    return model;
 }

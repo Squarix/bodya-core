@@ -2,7 +2,7 @@ import {DatabaseConfig, getShardedConnection} from './connection';
 import {createDynamicModel} from './utils';
 import {Model} from 'objection';
 
-const shardedModelMap: Map<string, typeof Model> = new Map<string, typeof Model>();
+const shardedModelMap: Map<string, any> = new Map<string, any>();
 
 export abstract class AbstractShardedModel extends Model {
     static get idColumn(): string | string[] {
@@ -16,7 +16,7 @@ export abstract class AbstractShardedModel extends Model {
         return `${this.getTableNameTemplate()}_${shard}`;
     }
 
-    static useShard(config: DatabaseConfig, shard: number): typeof Model {
+    static useShard<T extends typeof AbstractShardedModel>(this: T, config: DatabaseConfig, shard: number): T {
         const tableName = this.getShardedTableName(shard);
         const cachedModel = shardedModelMap.get(tableName);
         if (cachedModel) {
@@ -24,7 +24,7 @@ export abstract class AbstractShardedModel extends Model {
         }
 
         const connection = getShardedConnection(config, shard);
-        const model = createDynamicModel(this, tableName, connection);
+        const model = createDynamicModel<T>(this, tableName, connection);
         shardedModelMap.set(tableName, model);
 
         return model;

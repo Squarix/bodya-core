@@ -4,5 +4,5 @@ export declare abstract class AbstractShardedModel extends Model {
     static get idColumn(): string | string[];
     static getTableNameTemplate(): string;
     static getShardedTableName(shard: number): string;
-    static useShard(config: DatabaseConfig, shard: number): typeof Model;
+    static useShard<T extends typeof AbstractShardedModel>(this: T, config: DatabaseConfig, shard: number): T;
 }
