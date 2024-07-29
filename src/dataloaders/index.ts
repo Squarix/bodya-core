@@ -134,7 +134,7 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
 
         results.forEach((res, i) => {
             if (!(res instanceof Error)) {
-                cacheables[_buildCacheKey(batchFn.name, unmatched[i].toString())] = JSON.stringify(res);
+                cacheables[_buildCacheKey(batchFn.name, cacheKeyFn ? cacheKeyFn(unmatched[i]) : unmatched[i].toString())] = JSON.stringify(res);
             }
 
             matches.set(unmatched[i].toString(), res)

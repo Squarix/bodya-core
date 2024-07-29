@@ -16,7 +16,6 @@ const getShardedConnection = (config, shard) => {
             return;
         }
         const [from, to] = connection.sharding.split('-');
-        console.log('f: ', from, 't: ', to, 's: ', shard);
         return +from >= shard && +to >= shard;
     });
     if (!shardedConnection) {
