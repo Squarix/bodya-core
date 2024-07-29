@@ -1,6 +1,8 @@
 import {AbstractShardedModel} from './AbstractShardedModel';
 
 class UserShardedModel extends AbstractShardedModel {
+    // @ts-ignore
+    id: number;
     static getTableNameTemplate() {
         return 'user_shard'
     }
@@ -16,8 +18,9 @@ const testConfig = {
 
 const qb = UserShardedModel.useShard(testConfig, 1)
     .query()
-    .where('1', 1)
-    .andWhere('2', 2);
+    .insert([{id: 1}, {id: 2}])
+    .onConflict()
+    .merge();
 
 console.log(
     qb.knex().client,

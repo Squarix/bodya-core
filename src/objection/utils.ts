@@ -13,10 +13,9 @@ function createClassInheritor(className: string): Function {
 }
 
 export const createDynamicModel = <T extends typeof AbstractShardedModel>(proto: T, tableName: string, connection: ShardedConnectionConfig): T => {
-    console.log(proto.name);
     const inheritor = createClassInheritor(proto.name);
     const model = inheritor(proto);
-    model['tableName'] = () => {return tableName};
+    model['assignedTableName'] = tableName;
     model.knex(knex(connection));
     return model;
 }

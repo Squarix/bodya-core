@@ -5,6 +5,7 @@ import {Model} from 'objection';
 const shardedModelMap: Map<string, any> = new Map<string, any>();
 
 export abstract class AbstractShardedModel extends Model {
+    public static readonly assignedTableName: string;
     static get idColumn(): string | string[] {
         return 'id';
     }
@@ -14,6 +15,10 @@ export abstract class AbstractShardedModel extends Model {
 
     static getShardedTableName(shard: number): string {
         return `${this.getTableNameTemplate()}_${shard}`;
+    }
+
+    static get tableName(): string {
+        return this['assignedTableName'];
     }
 
     static useShard<T extends typeof AbstractShardedModel>(this: T, config: DatabaseConfig, shard: number): T {
