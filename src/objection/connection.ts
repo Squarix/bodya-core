@@ -1,4 +1,4 @@
-import {knex, Knex} from 'knex';
+import knex, {Knex} from 'knex';
 import cfg from 'config';
 import moment from 'moment';
 
@@ -73,5 +73,5 @@ export const getKnexConnection = (name: string, config: DatabaseConfig) => {
     );
     const knexConnection = knex(connection);
     connectionMap.set(name, knexConnection);
-    return connection;
+    return knexConnection;
 }

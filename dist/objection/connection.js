@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getKnexConnection = exports.getShardedConnection = void 0;
-const knex_1 = require("knex");
+const knex_1 = __importDefault(require("knex"));
 const config_1 = __importDefault(require("config"));
 const moment_1 = __importDefault(require("moment"));
 const pg_1 = __importDefault(require("pg"));
@@ -48,8 +48,8 @@ const getKnexConnection = (name, config) => {
         return connectionMap.get(name);
     }
     const connection = config_1.default.util.cloneDeep(config.connections.find(c => c.name === name));
-    const knexConnection = (0, knex_1.knex)(connection);
+    const knexConnection = (0, knex_1.default)(connection);
     connectionMap.set(name, knexConnection);
-    return connection;
+    return knexConnection;
 };
 exports.getKnexConnection = getKnexConnection;
