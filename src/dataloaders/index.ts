@@ -36,6 +36,7 @@ export function createLoader<K extends Serializable, N>(
         localCachedBatchFn(batchFn, cacheMap, ttlS), {
             batchScheduleFn: (cb) => setTimeout(cb, 25),
             cacheMap,
+            cache: options.cache ? options.cache : false,
             ...options,
         }
     );
