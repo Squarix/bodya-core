@@ -1,6 +1,6 @@
 {
   "name": "@bodyam8/core",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "description": "most usefull backend tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -41,11 +41,13 @@
     "typescript-eslint": "^7.16.1"
   },
   "dependencies": {
+    "@types/moment": "^2.13.0",
     "bluebird": "^3.7.2",
     "config": "^3.3.12",
     "dataloader": "^2.2.2",
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
+    "moment": "^2.30.1",
     "objection": "^3.1.4",
     "redis": "^4.6.15"
   }

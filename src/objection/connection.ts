@@ -1,5 +1,7 @@
-import {Knex} from 'knex';
+import {knex, Knex} from 'knex';
 import cfg from 'config';
+import moment from 'moment';
+
 
 interface ShardedConnection {
     sharding: string;
@@ -45,6 +47,20 @@ export const getShardedConnection = (config: DatabaseConfig, shard: number): Sha
 }
 
 const connectionMap = new Map();
+const setTypeParser = (knex: Knex) => {
+    const DATE_OID = 1082
+    const TIMESTAMP_OID = 1114 // don't know if this is correct, just got it from jeff's response.
+
+    knex.client.driver.types.setTypeParser(DATE_OID, function(val: any) {
+        // For a DATE field, I only want the date
+        return val === null ? null : moment.utc(val).format('YYYY-MM-DD')
+    })
+
+    knex.client.driver.types.setTypeParser(TIMESTAMP_OID, function(val: any) {
+        // Ensure no timezone
+        return val === null ? null : moment.utc(val).toDate()
+    })
+}
 export const getKnexConnection = (name: string, config: DatabaseConfig) => {
     if (connectionMap.get(name)) {
         return connectionMap.get(name);
@@ -53,6 +69,9 @@ export const getKnexConnection = (name: string, config: DatabaseConfig) => {
     const connection = cfg.util.cloneDeep(
         config.connections.find(c => c.name === name),
     );
-    connectionMap.set(name, connection);
+    const knexConnection = knex(connection);
+    setTypeParser(knexConnection);
+
+    connectionMap.set(name, knexConnection);
     return connection;
 }
