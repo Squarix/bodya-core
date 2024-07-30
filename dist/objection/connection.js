@@ -7,6 +7,17 @@ exports.getKnexConnection = exports.getShardedConnection = void 0;
 const knex_1 = require("knex");
 const config_1 = __importDefault(require("config"));
 const moment_1 = __importDefault(require("moment"));
+const pg_1 = __importDefault(require("pg"));
+const DATE_OID = 1082;
+const TIMESTAMP_OID = 1114; // don't know if this is correct, just got it from jeff's response.
+pg_1.default.types.setTypeParser(DATE_OID, function (val) {
+    // For a DATE field, I only want the date
+    return val === null ? null : moment_1.default.utc(val).format('YYYY-MM-DD');
+});
+pg_1.default.types.setTypeParser(TIMESTAMP_OID, function (val) {
+    // Ensure no timezone
+    return val === null ? null : moment_1.default.utc(val).toDate();
+});
 const shardingMap = new Map();
 /*
 * 1. define sharding property inside connection config
@@ -32,25 +43,12 @@ const getShardedConnection = (config, shard) => {
 };
 exports.getShardedConnection = getShardedConnection;
 const connectionMap = new Map();
-const setTypeParser = (knex) => {
-    const DATE_OID = 1082;
-    const TIMESTAMP_OID = 1114; // don't know if this is correct, just got it from jeff's response.
-    knex.client.driver.types.setTypeParser(DATE_OID, function (val) {
-        // For a DATE field, I only want the date
-        return val === null ? null : moment_1.default.utc(val).format('YYYY-MM-DD');
-    });
-    knex.client.driver.types.setTypeParser(TIMESTAMP_OID, function (val) {
-        // Ensure no timezone
-        return val === null ? null : moment_1.default.utc(val).toDate();
-    });
-};
 const getKnexConnection = (name, config) => {
     if (connectionMap.get(name)) {
         return connectionMap.get(name);
     }
     const connection = config_1.default.util.cloneDeep(config.connections.find(c => c.name === name));
     const knexConnection = (0, knex_1.knex)(connection);
-    setTypeParser(knexConnection);
     connectionMap.set(name, knexConnection);
     return connection;
 };
