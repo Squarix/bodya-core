@@ -6,18 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getKnexConnection = exports.getShardedConnection = void 0;
 const knex_1 = __importDefault(require("knex"));
 const config_1 = __importDefault(require("config"));
-const moment_1 = __importDefault(require("moment"));
-const pg_1 = __importDefault(require("pg"));
-const DATE_OID = 1082;
-const TIMESTAMP_OID = 1114; // don't know if this is correct, just got it from jeff's response.
-pg_1.default.types.setTypeParser(DATE_OID, function (val) {
-    // For a DATE field, I only want the date
-    return val === null ? null : moment_1.default.utc(val).format('YYYY-MM-DD');
-});
-pg_1.default.types.setTypeParser(TIMESTAMP_OID, function (val) {
-    // Ensure no timezone
-    return val === null ? null : moment_1.default.utc(val).toDate();
-});
 const shardingMap = new Map();
 /*
 * 1. define sharding property inside connection config

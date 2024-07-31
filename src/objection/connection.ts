@@ -1,20 +1,20 @@
 import knex, {Knex} from 'knex';
 import cfg from 'config';
-import moment from 'moment';
-
-import pg from 'pg';
-
-const DATE_OID = 1082
-const TIMESTAMP_OID = 1114 // don't know if this is correct, just got it from jeff's response.
-pg.types.setTypeParser(DATE_OID, function(val: any) {
-    // For a DATE field, I only want the date
-    return val === null ? null : moment.utc(val).format('YYYY-MM-DD')
-});
-
-pg.types.setTypeParser(TIMESTAMP_OID, function(val: any) {
-    // Ensure no timezone
-    return val === null ? null : moment.utc(val).toDate()
-});
+// import moment from 'moment';
+//
+// import pg from 'pg';
+//
+// const DATE_OID = 1082
+// const TIMESTAMP_OID = 1114 // don't know if this is correct, just got it from jeff's response.
+// pg.types.setTypeParser(DATE_OID, function(val: any) {
+//     // For a DATE field, I only want the date
+//     return val === null ? null : moment.utc(val).format('YYYY-MM-DD')
+// });
+//
+// pg.types.setTypeParser(TIMESTAMP_OID, function(val: any) {
+//     // Ensure no timezone
+//     return val === null ? null : moment.utc(val).toDate()
+// });
 
 
 
