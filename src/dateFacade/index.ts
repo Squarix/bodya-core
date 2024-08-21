@@ -5,9 +5,9 @@ export const TIME_HOUR_MS = TIME_MINUTE_MS * 60;
 export const TIME_DAY_S = TIME_HOUR_S * 24;
 export const TIME_DAY_MS = TIME_HOUR_MS * 24;
 
-let mockedDateTime: number;
+let mockedDateTime: number | undefined;
 
-export const mockDateTime = (timeMs: number) => {
+export const mockDateTime = (timeMs?: number) => {
     mockedDateTime = timeMs;
 };
 
