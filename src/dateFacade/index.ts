@@ -5,24 +5,9 @@ export const TIME_HOUR_MS = TIME_MINUTE_MS * 60;
 export const TIME_DAY_S = TIME_HOUR_S * 24;
 export const TIME_DAY_MS = TIME_HOUR_MS * 24;
 
-export const diffFromNowMinutes = (date: Date, limitHours?: number): number => {
-    // Разница во времени в миллисекундах
-    const diffMilliseconds = Date.now() - date.getTime();
+let mockedDateTime: number;
 
-    // Переводим разницу в минуты
-    let diffMinutes = diffMilliseconds / (1000 * 60);
-
-    // Ограничиваем разницу по лимиту
-    if (limitHours && diffMinutes > limitHours * 60) {
-        diffMinutes = limitHours * 60;
-    }
-
-    return diffMinutes;
-};
-
-let mockedDateTime: Date;
-
-export const mockDateTime = (timeMs: Date) => {
+export const mockDateTime = (timeMs: number) => {
     mockedDateTime = timeMs;
 };
 
@@ -32,4 +17,19 @@ export const getCurrentTimeMs = () => {
     }
 
     return Date.now();
+};
+
+export const diffFromNowMinutes = (date: Date, limitHours?: number): number => {
+    // Time difference in milliseconds
+    const diffMilliseconds = getCurrentTimeMs() - date.getTime();
+
+    // Translating the difference into minutes
+    let diffMinutes = diffMilliseconds / (1000 * 60);
+
+    // Limit the difference by limit
+    if (limitHours && diffMinutes > limitHours * 60) {
+        diffMinutes = limitHours * 60;
+    }
+
+    return diffMinutes;
 };
