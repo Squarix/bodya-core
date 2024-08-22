@@ -1,6 +1,6 @@
 import {ShardedConnectionConfig} from './connection';
 import {AbstractShardedModel} from './AbstractShardedModel';
-import {knex} from 'knex';
+import {Knex, knex} from 'knex';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 function createClassInheritor(className: string): Function {
@@ -12,10 +12,10 @@ function createClassInheritor(className: string): Function {
   `);
 }
 
-export const createDynamicModel = <T extends typeof AbstractShardedModel>(proto: T, tableName: string, connection: ShardedConnectionConfig): T => {
+export const createDynamicModel = <T extends typeof AbstractShardedModel>(proto: T, tableName: string, connection: Knex): T => {
     const inheritor = createClassInheritor(proto.name);
     const model = inheritor(proto);
     model['assignedTableName'] = tableName;
-    model.knex(knex(connection));
+    model.knex(connection);
     return model;
 }

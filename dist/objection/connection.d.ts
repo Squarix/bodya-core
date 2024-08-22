@@ -9,6 +9,6 @@ export type DatabaseConfig = {
     }>;
     shardedConnections: Array<ShardedConnectionConfig>;
 };
-export declare const getShardedConnection: (config: DatabaseConfig, shard: number) => ShardedConnectionConfig;
+export declare const getShardedConnection: (config: DatabaseConfig, shard: number) => Knex;
 export declare const getKnexConnection: (name: string, config: DatabaseConfig) => any;
 export {};

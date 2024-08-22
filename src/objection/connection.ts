@@ -36,9 +36,11 @@ const shardingMap = new Map();
 * 2. function will return suitable config
 * 3. shardedConnection is locally cached.
 * */
-export const getShardedConnection = (config: DatabaseConfig, shard: number): ShardedConnectionConfig => {
-    if (shardingMap.get(shard)) {
-        return shardingMap.get(shard);
+
+let connection: Knex;
+export const getShardedConnection = (config: DatabaseConfig, shard: number): Knex => {
+    if (connection) {
+        return connection;
     }
 
     const shardedConnection = cfg.util.cloneDeep(
@@ -58,8 +60,8 @@ export const getShardedConnection = (config: DatabaseConfig, shard: number): Sha
         throw new Error(`Missing config for requested shard: ${shard}`);
     }
 
-    shardingMap.set(shard, shardedConnection);
-    return shardedConnection;
+    connection = knex(shardedConnection);
+    return connection;
 }
 
 const connectionMap = new Map();
