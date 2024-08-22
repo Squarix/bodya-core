@@ -20,13 +20,10 @@ export const getCurrentTimeMs = () => {
 };
 
 export const diffFromNowMinutes = (date: Date, limitHours?: number): number => {
-    // Time difference in milliseconds
     const diffMilliseconds = getCurrentTimeMs() - date.getTime();
-
-    // Translating the difference into minutes
     let diffMinutes = diffMilliseconds / (1000 * 60);
 
-    // Limit the difference by limit
+    // Limit the difference by hours
     if (limitHours && diffMinutes > limitHours * 60) {
         diffMinutes = limitHours * 60;
     }
