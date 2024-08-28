@@ -5,4 +5,5 @@ export type User = {
     telegramId: number;
     catId: number;
     shard: number;
+    createdAt: Date;
 }
