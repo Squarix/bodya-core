@@ -2,6 +2,7 @@ import DataLoader from 'dataloader';
 import BluebirdPromise from 'bluebird';
 import groupBy from 'lodash/groupBy';
 import {Redis} from 'ioredis';
+import {clearTimeout} from 'timers';
 
 const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 100;
 
@@ -20,7 +21,12 @@ export function createShardedLoader<K, N>(
     options: DataLoader.Options<[number, K], N> = {},
 ): DataLoader<[number, K], N> {
     return new DataLoader<[number, K], N>(localShardedBatchFn(batchFn), {
-        batchScheduleFn: (cb) => setTimeout(cb, 25),
+        batchScheduleFn: (cb) => {
+            const timeoutId = setTimeout(() => {
+                cb();
+                clearTimeout(timeoutId);
+            }, 25)
+        },
         ...options,
         cache: false,
     });
@@ -50,7 +56,12 @@ export function createCachedLoader<K extends Serializable, N>(
     cacheKeyFn?: (key: K) => string,
 ): DataLoader<K, N> {
     return new DataLoader<K, N>(centrallyCachedBatchFn<K, N>(batchFn, redisClient, ttl, cacheKeyFn), {
-        batchScheduleFn: (cb) => setTimeout(cb, 25),
+        batchScheduleFn: (cb) => {
+            const timeoutId = +setTimeout(() => {
+                cb();
+                clearTimeout(timeoutId);
+            }, 25);
+        },
         ...options,
         cache: false,
     });
@@ -90,8 +101,9 @@ function localCachedBatchFn<K extends Serializable, N>(
     return async (keys: ReadonlyArray<K>) => {
         const result = await batchFn(keys);
         // clear local cache after TTL
-        setTimeout(() => {
+        const timeoutId = +setTimeout(() => {
             keys.forEach(k => cacheMap.delete(k));
+            clearTimeout(timeoutId);
         }, ttlS * 1000);
 
         return result;

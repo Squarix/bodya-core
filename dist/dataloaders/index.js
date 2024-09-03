@@ -18,6 +18,7 @@ exports.createCachedLoader = createCachedLoader;
 const dataloader_1 = __importDefault(require("dataloader"));
 const bluebird_1 = __importDefault(require("bluebird"));
 const groupBy_1 = __importDefault(require("lodash/groupBy"));
+const timers_1 = require("timers");
 const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY || 100;
 /*
 * First parameter on load is always shard number!
@@ -26,14 +27,24 @@ const REDIS_CLIENT_MAX_CONCURRENCY = process.env.REDIS_LOADER_MAX_CONCURRENCY ||
 * шардированые запросы не кешируем!
 * */
 function createShardedLoader(batchFn, options = {}) {
-    return new dataloader_1.default(localShardedBatchFn(batchFn), Object.assign(Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 25) }, options), { cache: false }));
+    return new dataloader_1.default(localShardedBatchFn(batchFn), Object.assign(Object.assign({ batchScheduleFn: (cb) => {
+            const timeoutId = setTimeout(() => {
+                cb();
+                (0, timers_1.clearTimeout)(timeoutId);
+            }, 25);
+        } }, options), { cache: false }));
 }
 function createLoader(batchFn, options = {}, ttlS = 0) {
     const cacheMap = new Map();
     return new dataloader_1.default(localCachedBatchFn(batchFn, cacheMap, ttlS), Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 25), cacheMap, cache: options.cache ? options.cache : false }, options));
 }
 function createCachedLoader(batchFn, redisClient, options = {}, ttl = 0, cacheKeyFn) {
-    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl, cacheKeyFn), Object.assign(Object.assign({ batchScheduleFn: (cb) => setTimeout(cb, 25) }, options), { cache: false }));
+    return new dataloader_1.default(centrallyCachedBatchFn(batchFn, redisClient, ttl, cacheKeyFn), Object.assign(Object.assign({ batchScheduleFn: (cb) => {
+            const timeoutId = +setTimeout(() => {
+                cb();
+                (0, timers_1.clearTimeout)(timeoutId);
+            }, 25);
+        } }, options), { cache: false }));
 }
 function _buildCacheKey(fnName, key) {
     return `bodya-dataloaders-${fnName}-${key}`;
@@ -56,8 +67,9 @@ function localCachedBatchFn(batchFn, cacheMap, ttlS) {
     return (keys) => __awaiter(this, void 0, void 0, function* () {
         const result = yield batchFn(keys);
         // clear local cache after TTL
-        setTimeout(() => {
+        const timeoutId = +setTimeout(() => {
             keys.forEach(k => cacheMap.delete(k));
+            (0, timers_1.clearTimeout)(timeoutId);
         }, ttlS * 1000);
         return result;
     });
