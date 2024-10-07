@@ -29,18 +29,16 @@ export type DatabaseConfig = {
     shardedConnections: Array<ShardedConnectionConfig>;
 }
 
-const shardingMap = new Map();
 
 /*
 * 1. define sharding property inside connection config
 * 2. function will return suitable config
 * 3. shardedConnection is locally cached.
 * */
-
-let connection: Knex;
+const shardingMap = new Map();
 export const getShardedConnection = (config: DatabaseConfig, shard: number): Knex => {
-    if (connection) {
-        return connection;
+    if (shardingMap.get(shard)) {
+        return shardingMap.get(shard);
     }
 
     const shardedConnection = cfg.util.cloneDeep(
@@ -60,8 +58,8 @@ export const getShardedConnection = (config: DatabaseConfig, shard: number): Kne
         throw new Error(`Missing config for requested shard: ${shard}`);
     }
 
-    connection = knex(shardedConnection);
-    return connection;
+    shardingMap.set(shard, knex(shardedConnection));
+    return shardedConnection;
 }
 
 const connectionMap = new Map();

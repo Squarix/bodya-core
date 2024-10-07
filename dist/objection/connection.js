@@ -6,16 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getKnexConnection = exports.getShardedConnection = void 0;
 const knex_1 = __importDefault(require("knex"));
 const config_1 = __importDefault(require("config"));
-const shardingMap = new Map();
 /*
 * 1. define sharding property inside connection config
 * 2. function will return suitable config
 * 3. shardedConnection is locally cached.
 * */
-let connection;
+const shardingMap = new Map();
 const getShardedConnection = (config, shard) => {
-    if (connection) {
-        return connection;
+    if (shardingMap.get(shard)) {
+        return shardingMap.get(shard);
     }
     const shardedConnection = config_1.default.util.cloneDeep(config.shardedConnections.find(connection => {
         if (!connection.sharding) {
@@ -27,8 +26,8 @@ const getShardedConnection = (config, shard) => {
     if (!shardedConnection) {
         throw new Error(`Missing config for requested shard: ${shard}`);
     }
-    connection = (0, knex_1.default)(shardedConnection);
-    return connection;
+    shardingMap.set(shard, (0, knex_1.default)(shardedConnection));
+    return shardedConnection;
 };
 exports.getShardedConnection = getShardedConnection;
 const connectionMap = new Map();

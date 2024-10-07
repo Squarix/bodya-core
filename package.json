@@ -1,6 +1,6 @@
 {
   "name": "@bodyam8/core",
-  "version": "0.0.46",
+  "version": "0.0.47",
   "description": "most useful backend tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
