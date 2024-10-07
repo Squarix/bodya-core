@@ -14,7 +14,7 @@ const config_1 = __importDefault(require("config"));
 const shardingMap = new Map();
 const shardingKnexMap = new Map();
 const getShardedConnection = (config, shard) => {
-    if (shardingMap.get(shard)) {
+    if (shardingMap.has(shard)) {
         return shardingMap.get(shard);
     }
     const shardedConnection = config_1.default.util.cloneDeep(config.shardedConnections.find(connection => {
@@ -36,7 +36,7 @@ const getShardedConnection = (config, shard) => {
         throw new Error(`Missing config for requested shard: ${shard}`);
     }
     shardingMap.set(shard, shardedKnex);
-    return shardedConnection;
+    return shardedKnex;
 };
 exports.getShardedConnection = getShardedConnection;
 const connectionMap = new Map();
