@@ -12,6 +12,7 @@ const config_1 = __importDefault(require("config"));
 * 3. shardedConnection is locally cached.
 * */
 const shardingMap = new Map();
+const shardingKnexMap = new Map();
 const getShardedConnection = (config, shard) => {
     if (shardingMap.get(shard)) {
         return shardingMap.get(shard);
@@ -23,10 +24,18 @@ const getShardedConnection = (config, shard) => {
         const [from, to] = connection.sharding.split('-');
         return +shard >= +from && +shard <= +to;
     }));
+    let shardedKnex;
+    if (shardingKnexMap.has(shardedConnection.sharding)) {
+        shardedKnex = shardingKnexMap.get(shardedConnection.sharding);
+    }
+    else {
+        shardedKnex = (0, knex_1.default)(shardedConnection);
+        shardingKnexMap.set(shardedConnection.sharding, shardedKnex);
+    }
     if (!shardedConnection) {
         throw new Error(`Missing config for requested shard: ${shard}`);
     }
-    shardingMap.set(shard, (0, knex_1.default)(shardedConnection));
+    shardingMap.set(shard, shardedKnex);
     return shardedConnection;
 };
 exports.getShardedConnection = getShardedConnection;

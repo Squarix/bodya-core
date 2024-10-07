@@ -36,6 +36,7 @@ export type DatabaseConfig = {
 * 3. shardedConnection is locally cached.
 * */
 const shardingMap = new Map();
+const shardingKnexMap = new Map<string, Knex>();
 export const getShardedConnection = (config: DatabaseConfig, shard: number): Knex => {
     if (shardingMap.get(shard)) {
         return shardingMap.get(shard);
@@ -54,11 +55,19 @@ export const getShardedConnection = (config: DatabaseConfig, shard: number): Kne
         )
     );
 
+    let shardedKnex;
+    if (shardingKnexMap.has(shardedConnection.sharding)) {
+        shardedKnex = shardingKnexMap.get(shardedConnection.sharding);
+    } else {
+        shardedKnex = knex(shardedConnection);
+        shardingKnexMap.set(shardedConnection.sharding, shardedKnex);
+    }
+
     if (!shardedConnection) {
         throw new Error(`Missing config for requested shard: ${shard}`);
     }
 
-    shardingMap.set(shard, knex(shardedConnection));
+    shardingMap.set(shard, shardedKnex);
     return shardedConnection;
 }
 
