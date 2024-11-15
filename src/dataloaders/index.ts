@@ -115,6 +115,7 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
     redisClient: Redis,
     ttl: number,
     cacheKeyFn?: (key: K) => string,
+    reviver?: <T extends object>(obj: T) => T,
 ) {
     return async (keys: ReadonlyArray<K>): Promise<ArrayLike<N | Error>> => {
         const matches = new Map();
@@ -126,6 +127,10 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
             try {
                 if (value !== null) {
                     parsedValue = JSON.parse(value);
+
+                    if(reviver){
+                        parsedValue = reviver(parsedValue)
+                    } 
                 }
             } catch (err) {
                 console.debug('Strange value in redis: ', value);
