@@ -3,7 +3,6 @@ export type User = {
     ownPromoCode: string;
     promoCode: string;
     telegramId: number;
-    catId: number;
     shard: number;
     createdAt: Date;
 };
