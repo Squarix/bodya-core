@@ -96,7 +96,7 @@ function centrallyCachedBatchFn(batchFn, redisClient, ttl, cacheKeyFn) {
             return unmatched.push(keys[i]);
         });
         if (!unmatched.length) {
-            return keys.map(k => matches.get(k.toString()));
+            return keys.map(k => matches.get(cacheKeyFn ? cacheKeyFn(k) : k.toString()));
         }
         const results = Array.from(yield batchFn(unmatched));
         const cacheables = {};
@@ -104,12 +104,12 @@ function centrallyCachedBatchFn(batchFn, redisClient, ttl, cacheKeyFn) {
             if (!(res instanceof Error)) {
                 cacheables[_buildCacheKey(batchFn.name, cacheKeyFn ? cacheKeyFn(unmatched[i]) : unmatched[i].toString())] = JSON.stringify(res);
             }
-            matches.set(unmatched[i].toString(), res);
+            matches.set(cacheKeyFn ? cacheKeyFn(unmatched[i]) : unmatched[i].toString(), res);
         });
         yield redisClient.mset(cacheables);
         yield bluebird_1.default.map(Object.keys(cacheables), (key) => {
             return redisClient.expire(key.toString(), ttl);
         }, { concurrency: +REDIS_CLIENT_MAX_CONCURRENCY });
-        return keys.map(k => matches.get(k.toString()));
+        return keys.map(k => matches.get(cacheKeyFn ? cacheKeyFn(k) : k.toString()));
     });
 }

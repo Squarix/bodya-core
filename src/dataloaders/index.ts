@@ -139,7 +139,7 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
         });
 
         if (!unmatched.length) {
-            return keys.map(k => matches.get(k.toString()));
+            return keys.map(k => matches.get(cacheKeyFn ? cacheKeyFn(k) : k.toString()));
         }
 
         const results: Array<N | Error> = Array.from(await batchFn(unmatched));
@@ -150,7 +150,7 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
                 cacheables[_buildCacheKey(batchFn.name, cacheKeyFn ? cacheKeyFn(unmatched[i]) : unmatched[i].toString())] = JSON.stringify(res);
             }
 
-            matches.set(unmatched[i].toString(), res)
+            matches.set(cacheKeyFn ? cacheKeyFn(unmatched[i]) : unmatched[i].toString(), res)
         });
 
         await redisClient.mset(cacheables);
@@ -158,6 +158,6 @@ function centrallyCachedBatchFn<K extends Serializable, N>(
             return redisClient.expire(key.toString(), ttl);
         }, {concurrency: +REDIS_CLIENT_MAX_CONCURRENCY});
 
-        return keys.map(k => matches.get(k.toString()));
+        return keys.map(k => matches.get(cacheKeyFn ? cacheKeyFn(k) : k.toString()));
     };
 }
